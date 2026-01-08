@@ -140,19 +140,123 @@ patch_remove_paywall() {
     local ENTITLEMENTS_FILE="${SOURCE_DIR}/Blink/Subscriptions/EntitlementsManager.swift"
 
     if [ -f "$ENTITLEMENTS_FILE" ]; then
-        if ! grep -q 'private func _currentPlanName()' "$ENTITLEMENTS_FILE"; then
-            perl -0pi -e 's@public func currentPlanName\\(\\) -> String \\{@public func currentPlanName() -> String {\\n    return \"GPL Sideload Build\"\\n  }\\n\\n  private func _currentPlanName() -> String {@s' "$ENTITLEMENTS_FILE"
-        fi
+        python3 - "$ENTITLEMENTS_FILE" << 'PY'
+import re
+import sys
 
-        if ! grep -q 'private func _customerTier()' "$ENTITLEMENTS_FILE"; then
-            perl -0pi -e 's@public func customerTier\\(\\) -> CustomerTier \\{@public func customerTier() -> CustomerTier {\\n    return CustomerTier.Classic\\n  }\\n\\n  private func _customerTier() -> CustomerTier {@s' "$ENTITLEMENTS_FILE"
-        fi
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as fh:
+    data = fh.read()
 
-        if ! grep -q 'private func _hasActiveSubscriptions()' "$ENTITLEMENTS_FILE"; then
-            perl -0pi -e 's@public func hasActiveSubscriptions\\(\\) -> Bool \\{@public func hasActiveSubscriptions() -> Bool {\\n    return true\\n  }\\n\\n  private func _hasActiveSubscriptions() -> Bool {@s' "$ENTITLEMENTS_FILE"
-        fi
+def replace_func(name, body_lines):
+    pattern = re.compile(rf"\\bpublic func {re.escape(name)}\\b")
+    m = pattern.search(data)
+    if not m:
+        return data, False
 
-        echo "  Paywall removed (idempotent patch)"
+    line_start = data.rfind("\n", 0, m.start()) + 1
+    line_end = data.find("\n", m.start())
+    if line_end == -1:
+        line_end = len(data)
+    indent = re.match(r"[ \\t]*", data[line_start:line_end]).group(0)
+
+    brace_open = data.find("{", m.end())
+    if brace_open == -1:
+        return data, False
+
+    depth = 0
+    i = brace_open
+    in_string = False
+    in_line_comment = False
+    in_block_comment = False
+    while i < len(data):
+        ch = data[i]
+        nxt = data[i + 1] if i + 1 < len(data) else ""
+
+        if in_line_comment:
+            if ch == "\n":
+                in_line_comment = False
+            i += 1
+            continue
+        if in_block_comment:
+            if ch == "*" and nxt == "/":
+                in_block_comment = False
+                i += 2
+                continue
+            i += 1
+            continue
+        if in_string:
+            if ch == "\\":
+                i += 2
+                continue
+            if ch == "\"":
+                in_string = False
+            i += 1
+            continue
+
+        if ch == "/" and nxt == "/":
+            in_line_comment = True
+            i += 2
+            continue
+        if ch == "/" and nxt == "*":
+            in_block_comment = True
+            i += 2
+            continue
+        if ch == "\"":
+            in_string = True
+            i += 1
+            continue
+
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                brace_close = i
+                break
+        i += 1
+    else:
+        return data, False
+
+    inner_indent = indent + "  "
+    new_body = "\\n".join([inner_indent + line for line in body_lines])
+    new_data = data[:brace_open + 1] + "\\n" + new_body + "\\n" + indent + "}" + data[brace_close + 1:]
+    return new_data, True
+
+changed = False
+data, did_change = replace_func(
+    "currentPlanName",
+    [
+        "// BLINK_WRAPPER_PATCH",
+        "return \"GPL Sideload Build\"",
+    ],
+)
+changed = changed or did_change
+
+data, did_change = replace_func(
+    "customerTier",
+    [
+        "// BLINK_WRAPPER_PATCH",
+        "return CustomerTier.Classic",
+    ],
+)
+changed = changed or did_change
+
+data, did_change = replace_func(
+    "hasActiveSubscriptions",
+    [
+        "// BLINK_WRAPPER_PATCH",
+        "return true",
+    ],
+)
+changed = changed or did_change
+
+if changed:
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(data)
+PY
+
+        echo "  Paywall removed (function body replacement)"
     else
         echo "  Warning: EntitlementsManager.swift not found"
     fi
