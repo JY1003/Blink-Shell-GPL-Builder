@@ -18,7 +18,7 @@ Automated build script that produces unsigned `.ipa` files for sideloading via s
 # Build unsigned .ipa (for sideloading)
 ./build-blink.sh
 
-# Output: build-output/Blink-unsigned.ipa
+# Output: dist/Blink-unsigned.ipa
 ```
 
 Upload the `.ipa` to your preferred signing service (AltStore, Sideloadly, etc.).
@@ -47,6 +47,7 @@ Options:
   --clean          Clean build before building
   --archive        Create signed archive (requires Apple Developer account)
   --install        Build and install to device (requires Apple Developer account)
+  --keep-build     Keep build-output/ after a successful build
   --help           Show help message
 
 Examples:
@@ -59,10 +60,12 @@ Examples:
 ## Output
 
 ```
-build-output/
-├── Blink-unsigned.ipa    # Upload this to signing service
-├── Products/             # Raw build output
-└── DerivedData/          # Xcode build cache
+dist/
+└── Blink-unsigned.ipa    # Upload this to signing service
+
+build-output/             # Intermediate build output (removed by default)
+├── Products/
+└── DerivedData/
 ```
 
 ## Source Checkout

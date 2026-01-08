@@ -14,6 +14,7 @@ set -e
 #   --simulator      Build and run in iOS Simulator
 #   --archive        Create signed archive (requires dev account)
 #   --install        Build and install to connected device (requires dev account)
+#   --keep-build     Keep build-output/ after a successful build
 #   --help           Show this help message
 #
 # Examples:
@@ -26,6 +27,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 VERSION="v18.4.2"
 SOURCE_DIR="${SCRIPT_DIR}/blink-src"
 BUILD_DIR="${SCRIPT_DIR}/build-output"
+OUTPUT_DIR="${SCRIPT_DIR}/dist"
 SCHEME="Blink"
 PROJECT="${SOURCE_DIR}/Blink.xcodeproj"
 
@@ -36,6 +38,7 @@ DO_CLEAN=false
 DO_ARCHIVE=false
 DO_INSTALL=false
 DO_SIMULATOR=false
+KEEP_BUILD=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -64,6 +67,10 @@ while [[ $# -gt 0 ]]; do
         --simulator)
             DO_SIMULATOR=true
             DO_BUILD=false
+            shift
+            ;;
+        --keep-build)
+            KEEP_BUILD=true
             shift
             ;;
         --help)
@@ -361,8 +368,16 @@ build_app() {
             -skipMacroValidation \
             archive
 
+        if [ "$KEEP_BUILD" = true ]; then
+            OUTPUT_ARCHIVE_PATH="$ARCHIVE_PATH"
+        else
+            mkdir -p "$OUTPUT_DIR"
+            mv "$ARCHIVE_PATH" "$OUTPUT_DIR/"
+            OUTPUT_ARCHIVE_PATH="${OUTPUT_DIR}/Blink.xcarchive"
+        fi
+
         echo ""
-        echo "Archive created: $ARCHIVE_PATH"
+        echo "Archive created: $OUTPUT_ARCHIVE_PATH"
     else
         # Generic iOS build (unsigned .ipa for sideloading)
         # Use sideload-friendly entitlements (no iCloud, Push, etc.)
@@ -385,6 +400,7 @@ build_app() {
         echo "Packaging unsigned .ipa for sideloading..."
         APP_PATH="${BUILD_DIR}/Products/Blink.app"
         IPA_PATH="${BUILD_DIR}/Blink-unsigned.ipa"
+        OUTPUT_IPA_PATH="${OUTPUT_DIR}/Blink-unsigned.ipa"
 
         if [ -d "$APP_PATH" ]; then
             # Create Payload directory structure
@@ -404,7 +420,14 @@ build_app() {
             rm -rf "$PAYLOAD_DIR"
             cd "$SCRIPT_DIR"
 
-            echo "Created: $IPA_PATH"
+            mkdir -p "$OUTPUT_DIR"
+            if [ "$KEEP_BUILD" = true ]; then
+                cp -f "$IPA_PATH" "$OUTPUT_IPA_PATH"
+            else
+                mv "$IPA_PATH" "$OUTPUT_IPA_PATH"
+            fi
+
+            echo "Created: $OUTPUT_IPA_PATH"
         else
             echo "Error: Build failed - Blink.app not found"
             exit 1
@@ -437,6 +460,11 @@ resolve_packages
 
 if [ "$DO_BUILD" = true ] || [ "$DO_INSTALL" = true ] || [ "$DO_ARCHIVE" = true ] || [ "$DO_SIMULATOR" = true ]; then
     build_app
+    if [ "$KEEP_BUILD" = false ]; then
+        echo ""
+        echo "Cleaning build output..."
+        rm -rf "$BUILD_DIR"
+    fi
 fi
 
 echo ""
