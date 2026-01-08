@@ -1,13 +1,13 @@
 # Blink Shell GPL Builder
 
-This repo is a small script that downloads the Blink Shell GPL source code, removes the paywall, applies a few other build-time fixes, and produces a ready-to-upload IPA.
+This repo is a small script that downloads the [Blink Shell](https://github.com/blinksh/blink) GPL source code, removes the paywall, applies a few other build-time fixes, and produces a ready-to-upload IPA.
 
 ## What the script does
 
-- Clones Blink Shell into `blink-src/`
+- Clones the Blink Shell repo into `blink-src/`
+- Applies the GPL sideload paywall patch
 - Fixes a couple of Swift package pins
 - Makes the vim runtime fetch repeatable
-- Applies the GPL sideload paywall patch
 - Builds the app and places the output in `dist/`
 - Cleans up `build-output/` and `blink-src/` by default
 
@@ -74,7 +74,8 @@ blink-src/                # Source checkout (removed by default)
 ## Notes
 
 - Use `--keep-source` if you want to inspect or debug the downloaded Blink source.
-- The version defaults to `v18.4.2`. You can override it by passing a version tag:
+- The version defaults to `v18.4.2`. You can override it by passing a Blink
+  branch name from the Blink repo (most releases are published as branches):
   ```bash
   ./build-blink.sh v19.0.0
   ```
@@ -87,9 +88,9 @@ rm -rf ~/Library/Caches/org.swift.swiftpm
 ./build-blink.sh --clean
 ```
 
-Finding available versions:
+Finding available versions (Blink publishes release branches in the repo):
 ```bash
-git ls-remote --tags https://github.com/blinksh/blink.git | grep -E "v[0-9]+"
+git ls-remote --heads https://github.com/blinksh/blink.git | grep -E "refs/heads/v[0-9]+"
 ```
 
 ## License
