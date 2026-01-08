@@ -5,7 +5,7 @@ set -e
 # Builds unsigned .ipa for sideloading via signing services
 #
 # Usage:
-#   ./build-blink.sh [options] [version]
+#   ./build-blink-shell-gpl.sh [options] [version]
 #
 # Options:
 #   --setup-only     Only setup/clone, don't build
@@ -20,10 +20,10 @@ set -e
 #   --help           Show this help message
 #
 # Examples:
-#   ./build-blink.sh                    # Build unsigned .ipa
-#   ./build-blink.sh v18.4.2            # Build specific version
-#   ./build-blink.sh --setup-only       # Only setup, don't build
-#   ./build-blink.sh --clean            # Clean build
+#   ./build-blink-shell-gpl.sh                    # Build unsigned .ipa
+#   ./build-blink-shell-gpl.sh v18.4.2            # Build specific version
+#   ./build-blink-shell-gpl.sh --setup-only       # Only setup, don't build
+#   ./build-blink-shell-gpl.sh --clean            # Clean build
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 VERSION="v18.4.2"

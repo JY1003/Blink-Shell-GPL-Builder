@@ -29,7 +29,7 @@ is missing.
 ## Quick start
 
 ```bash
-./build-blink.sh
+./build-blink-shell-gpl.sh
 ```
 
 Output:
@@ -42,7 +42,7 @@ Upload the IPA to your signing service (AltStore, Sideloadly, etc).
 ## Options
 
 ```
-./build-blink.sh [options] [version]
+./build-blink-shell-gpl.sh [options] [version]
 
 Options:
   --setup-only     Only setup/clone, don't build
@@ -79,7 +79,7 @@ blink-src/                # Source checkout (removed by default)
 - The version defaults to `v18.4.2`. You can override it by passing a Blink
   branch name from the Blink repo (most releases are published as branches):
   ```bash
-  ./build-blink.sh v19.0.0
+  ./build-blink-shell-gpl.sh v19.0.0
   ```
 - The build uses Blink’s default entitlements and migrations by default.
 - If a sideloaded build crashes at launch, try `--skip-migrator`.
@@ -93,7 +93,7 @@ blink-src/                # Source checkout (removed by default)
 Package dependency errors:
 ```bash
 rm -rf ~/Library/Caches/org.swift.swiftpm
-./build-blink.sh --clean
+./build-blink-shell-gpl.sh --clean
 ```
 
 Finding available versions (Blink publishes release branches in the repo):
