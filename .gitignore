@@ -1,0 +1,15 @@
+# Build output
+build/
+build-output/
+blink-src/
+
+# Xcode
+*.xcarchive
+DerivedData/
+*.xcresult
+*.xcactivitylog
+.swiftpm/
+
+# macOS
+.DS_Store
+.claude/
