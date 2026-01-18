@@ -1,26 +1,4 @@
-name: Build Blink Shell
-
-on:
-  workflow_dispatch:  # 允许手动点击按钮触发
-
-jobs:
-  build:
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Homebrew
-        run: |
-          brew update
-          brew install cmake ninja
-          
       - name: Run Build Script
         run: |
           chmod +x build-blink-shell-gpl.sh
-          ./build-blink-shell-gpl.sh --build
-          
-      - name: Upload IPA
-        uses: actions/upload-artifact@v4
-        with:
-          name: Blink-Shell-IPA
-          path: dist/*.ipa
+          ./build-blink-shell-gpl.sh --build v17.0.4
