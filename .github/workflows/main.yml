@@ -1,7 +1,7 @@
-name: Build Blink v17 (iOS 16)
+name: Build Blink Shell
 
 on:
-  workflow_dispatch:  # 这句就是添加“手动触发按钮”的关键
+  workflow_dispatch:  # 允许手动点击按钮触发
 
 jobs:
   build:
@@ -17,10 +17,10 @@ jobs:
       - name: Run Build Script
         run: |
           chmod +x build-blink-shell-gpl.sh
-          ./build-blink-shell-gpl.sh
+          ./build-blink-shell-gpl.sh --build
           
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: Blink-v17-TrollStore
-          path: ./*.ipa
+          name: Blink-Shell-IPA
+          path: dist/*.ipa
