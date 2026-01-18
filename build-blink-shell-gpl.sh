@@ -26,7 +26,7 @@ set -e
 #   ./build-blink-shell-gpl.sh --clean            # Clean build
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-VERSION="v16.1.6"
+VERSION="v17.0.4"
 SOURCE_DIR="${SCRIPT_DIR}/blink-src"
 BUILD_DIR="${SCRIPT_DIR}/build-output"
 OUTPUT_DIR="${SCRIPT_DIR}/dist"
